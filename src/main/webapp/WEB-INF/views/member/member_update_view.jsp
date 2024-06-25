@@ -12,6 +12,41 @@
 <link rel="stylesheet" type="text/css" href="./css/global.css">
 <script src="./js/jquery-3.5.1.min.js" type="text/javascript"></script>
 <script src="./js/bootstrap.min.js" type="text/javascript"></script>
+<script src="./js/validity.js" type="text/javascript"></script>
+<script type="text/javascript">
+	 $(function(){
+		
+		$("#db_id_check").click(function() {
+			var id = $('#member_id').val();
+			$.ajax({
+				url : './IdCheck',
+				type : 'get',
+				
+				data : {
+					member_id : id
+				},
+				success : function(result){
+					console.log("아이디 값 - " + result);
+					
+					if($.trim(result) == 1){
+						alert("사용할 수 없는 아이디입니다.");
+						$('member_id').focus();
+					} else {
+						alert("사용할 수 있는 아이디입니다.");
+						$('#id_check').val(1);
+						$('#member_password').focus();
+					}
+
+				}
+			});
+		});
+		
+		$("input[id='member_id']").on("change keyup paste", function(){
+			$("#id_check").val(0);
+		});
+	});
+ 
+</script>
 </head>
 <body>
 
@@ -30,6 +65,10 @@
 			<div class="col-sm-10">
 			  <input type="text" class="form-control" id="member_id" name="member_id" value="${member.memberId}">
 			</div>
+			
+			<button type="button" class="btn btn-primary" id="db_id_check">중복확인</button>
+			<input type="hidden" class="form-control" id="id_check" name="id_check" value="0">
+
 		  </div>	
 
 		  <div class="mb-3 row">

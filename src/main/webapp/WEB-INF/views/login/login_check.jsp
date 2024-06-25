@@ -6,21 +6,16 @@
 <meta charset="UTF-8">
 <title>로그인 체크</title>
 <c:choose>
-	<c:when test="${memberDTO.member_id == ''}">
+	<c:when test="${sessionScope.login_status == 'fail'}">
 		<script type="text/javascript">
-			alert("가입되지 않은 아이디입니다.")
+			alert("아이디 또는 비밀번호를 잘못 입력하셨습니다. 로그인에 실패했습니다 ")
 			history.back();
 		</script>
 	</c:when>
-	<c:when test="${memberDTO.member_password == ''}">
-		<script type="text/javascript">
-			alert("비밀번호가 맞지 않습니다.")
-			history.back();
-		</script>
-	</c:when>
-	<c:otherwise>
+		<c:otherwise>
 		<script type="text/javascript">			
-			location.href="./index.jsp"
+			alert("성공적으로 로그인되었습니다.");
+			location.href="./"
 		</script>
 	</c:otherwise>
 </c:choose>

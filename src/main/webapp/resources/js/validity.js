@@ -4,5 +4,6 @@ $(function(){
 			alert("아이디 중복을 확인하세요.");
 			return false;
 		}	
+		
 	});
 });

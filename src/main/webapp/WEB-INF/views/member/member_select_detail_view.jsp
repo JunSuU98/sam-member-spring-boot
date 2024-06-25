@@ -34,7 +34,7 @@
 		</div>
 
 		<div class="btn-group" role="group" aria-label="Basic example">
-		  <button type="button" class="btn btn-secondary" onclick="location.href='./MemberSelect'">
+		  <button type="button" class="btn btn-secondary" onclick="location.href='./'">
 			메인화면
 		  </button>
 		  <button type="button" class="btn btn-secondary" onclick="location.href='./MemberUpdate?member_number=${member.memberNumber}'">

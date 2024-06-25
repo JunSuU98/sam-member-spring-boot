@@ -48,22 +48,25 @@ public class MemberController {
 	
 	@PostMapping("/MemberInsert")
 	public String memberInsert(MemberVO memberVO) {
-	
-		Member member = new Member();
-
-		member.setMemberCreate(memberVO.getMember_create());
-		member.setMemberUpdate(memberVO.getMember_update());
-		member.setMemberStatus(memberVO.getMember_status());
-		member.setMemberId(memberVO.getMember_id());
-		member.setMemberPassword(memberVO.getMember_password());
-		member.setMemberName(memberVO.getMember_name());
-		member.setMemberBirth(memberVO.getMember_birth());
-		member.setMemberEmail(memberVO.getMember_email());
-		member.setMemberPhone(memberVO.getMember_phone());
-		member.setMemberRate(memberVO.getMember_rate());
-		member.setMemberAddress(memberVO.getMember_address());
 		
-		memberService.saveMember(member);
+		if("1".equals(memberVO.getId_check())) { // 자바스크립트 비활성화 하고 submit 할 경우를 방지한다
+			Member member = new Member();
+
+			member.setMemberCreate(memberVO.getMember_create());
+			member.setMemberUpdate(memberVO.getMember_update());
+			member.setMemberStatus(memberVO.getMember_status());
+			member.setMemberId(memberVO.getMember_id());
+			member.setMemberPassword(memberVO.getMember_password());
+			member.setMemberName(memberVO.getMember_name());
+			member.setMemberBirth(memberVO.getMember_birth());
+			member.setMemberEmail(memberVO.getMember_email());
+			member.setMemberPhone(memberVO.getMember_phone());
+			member.setMemberRate(memberVO.getMember_rate());
+			member.setMemberAddress(memberVO.getMember_address());
+			
+			memberService.saveMember(member);
+
+		}
 		
 		return "member/member_insert";
 	}
@@ -80,25 +83,24 @@ public class MemberController {
 	@PostMapping("/MemberUpdate")
 	public String memberUpdate(MemberVO memberVO) {
 		
-		Member exsistingMember = memberService.findMemberById(memberVO.getMember_number());
+		if("1".equals(memberVO.getId_check())) { // 자바스크립트 비활성화하고 submit 할 경우를 방지한다 
+
+			Member exsistingMember = memberService.findMemberById(memberVO.getMember_number());
 		
-		System.out.println("exsistingMember.member_create: " + exsistingMember.getMemberCreate());
-		System.err.println("exsistingMember.member_create's type: " + exsistingMember.getMemberCreate().getClass().getTypeName());
-		
-		if(exsistingMember != null) {
-			exsistingMember.setMemberUpdate(memberVO.getMember_update());
-			exsistingMember.setMemberId(memberVO.getMember_id());
-			exsistingMember.setMemberPassword(memberVO.getMember_password());
-			exsistingMember.setMemberName(memberVO.getMember_name());
-			exsistingMember.setMemberBirth(memberVO.getMember_birth());
-			exsistingMember.setMemberEmail(memberVO.getMember_email());
-			exsistingMember.setMemberPhone(memberVO.getMember_phone());
-			exsistingMember.setMemberAddress(memberVO.getMember_address());
-					
-			memberService.saveMember(exsistingMember);
+			if(exsistingMember != null) {
+				exsistingMember.setMemberUpdate(memberVO.getMember_update());
+				exsistingMember.setMemberId(memberVO.getMember_id());
+				exsistingMember.setMemberPassword(memberVO.getMember_password());
+				exsistingMember.setMemberName(memberVO.getMember_name());
+				exsistingMember.setMemberBirth(memberVO.getMember_birth());
+				exsistingMember.setMemberEmail(memberVO.getMember_email());
+				exsistingMember.setMemberPhone(memberVO.getMember_phone());
+				exsistingMember.setMemberAddress(memberVO.getMember_address());
+						
+				memberService.saveMember(exsistingMember);
+			}
 		}
-
-
+		
 		return "member/member_update";
 	}
 	

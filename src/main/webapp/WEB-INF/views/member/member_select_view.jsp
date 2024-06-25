@@ -61,12 +61,7 @@
 		</table>
 		
 		<button type="button" class="btn btn-primary mb-3" onclick="location.href='./'">메인 화면으로</button>
-		<button type="button" class="btn btn-secondary" onclick="location.href='./MemberInsert'">
-			회원가입
-		  </button>
 	</main>
-
-
 
 </body>
 </html>

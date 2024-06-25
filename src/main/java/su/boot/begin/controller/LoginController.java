@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import su.boot.begin.entity.Member;
 import su.boot.begin.service.LoginService;
@@ -26,16 +27,29 @@ public class LoginController {
 	}
 	
 	@PostMapping("/Login")
-	public String login(MemberVO memberVO, Model model) {
+	public String login(MemberVO memberVO, HttpSession httpSession, Model model) {
 		
-		loginService.login(memberVO.getMember_id(), memberVO.getMember_password());
+		Member member = loginService.login(memberVO.getMember_id(), memberVO.getMember_password());
+		
+		if (member != null) {
+			httpSession.setAttribute("member_number", member.getMemberNumber());
+			httpSession.setAttribute("member_id", member.getMemberId());
+			httpSession.setAttribute("member_name", member.getMemberName());
+			httpSession.setAttribute("login_status", "success");
+			
+		} else { // 로그인 실패
+			httpSession.setAttribute("login_status", "fail");
+		}
+		
 		
 		return "login/login_check";
 	}
 	
 	// 로그아웃
 	@GetMapping("/Logout")
-	public String logout() {
+	public String logout(HttpSession httpSession) {
+		
+		httpSession.invalidate();
 		
 		return "login/logout";
 	}
