@@ -74,3 +74,7 @@ replay_pid*
 .settings/
 .tern-project
 
+# SpringBoot Config
+
+.properties
+.yml

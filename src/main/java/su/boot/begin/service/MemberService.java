@@ -1,11 +1,10 @@
 package su.boot.begin.service;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.fasterxml.classmate.MemberResolver;
 
 import jakarta.inject.Inject;
 import su.boot.begin.entity.Member;
@@ -18,10 +17,45 @@ public class MemberService{
 	@Inject
 	MemberRepository memberRepository;
 	
-	// 전체 조회
+	// 검색 결과에 따른 전체 조회 (페이징 포함)
 	@Transactional(readOnly = true)
-	public List<Member> findAllMember(){
-		return memberRepository.findAll();
+	public Page<Member> findAllMember(String searchFilter, String searchQuery, int page, int size){
+		
+		Pageable pageable = PageRequest.of(page, size);
+		
+		// 검색필터나 검색어를 입력한 경우 
+		if(searchFilter != null || searchQuery != null) {
+			if(searchFilter.equals("member_id")) {
+				return memberRepository.findByMemberIdContaining(searchQuery, pageable);
+			} 
+			
+			if(searchFilter.equals("member_name")) {
+				return memberRepository.findByMemberNameContaining(searchQuery, pageable);
+			}
+
+			if(searchFilter.equals("member_phone")) {
+				return memberRepository.findByMemberPhoneContaining(searchQuery, pageable);
+			}
+			
+			if(searchFilter.equals("member_email")) {
+				return memberRepository.findByMemberEmailContaining(searchQuery, pageable);
+			}
+			
+			if(searchFilter.equals("member_birth")) {
+				return memberRepository.findByMemberBirthContaining(searchQuery, pageable);
+			}
+			
+			if(searchFilter.equals("member_status")) {
+				return memberRepository.findByMemberStatusContaining(searchQuery, pageable);
+			}
+			
+			if(searchFilter.equals("member_rate")) {
+				return memberRepository.findByMemberRateContaining(searchQuery, pageable);
+			}
+		}
+		
+		// 처음 MemberSelect 에 진입한 경우 (검색필터, 검색어 없는 경우)
+		return memberRepository.findAll(pageable);
 	}
 	
 	// 상세 조회

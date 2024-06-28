@@ -1,5 +1,6 @@
 package su.boot.begin.controller;
 
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,14 +21,21 @@ public class MemberController {
 	@Inject
 	private final MemberService memberService;
 	
-	// 회원 전체 조회
+	
+	// 검색 결과에 따른 전체 조회 (페이징 포함)
 	@GetMapping("/MemberSelect")
-	public String memberSelect(Model model) {
+	public String memberSelect(@RequestParam(name = "searchFilter", required = false) String searchFilter, @RequestParam(name = "searchQuery", required = false) String searchQuery,
+	@RequestParam(name = "page",defaultValue = "1") int page, @RequestParam(name="size",defaultValue = "5") int size, Model model) {
 		
-		model.addAttribute("arrayList", memberService.findAllMember());
+		Page<Member> memberPage = memberService.findAllMember(searchFilter, searchQuery, page - 1, size);
 		
+		model.addAttribute("arrayList", memberPage);
+		model.addAttribute("currentPage", page);
+		model.addAttribute("totalPages", memberPage.getTotalPages());
+
 		return "member/member_select_view";
 	}
+
 	
 	// 회원 상세 조회
 	@GetMapping("/MemberSelectDetail")
