@@ -62,7 +62,16 @@
 				</button>
 
 		
+				<!-- 네이버 로그인 버튼 -->
 				<a href="./NaverLogin"><img height="50" src="http://static.nid.naver.com/oauth/small_g_in.PNG"/></a>	
+				
+				<!-- 카카오 로그인 버튼 -->
+				<a href="./KakaoLogin">
+					<img src="//k.kakaocdn.net/14/dn/btqCn0WEmI3/nijroPfbpCa4at5EIsjyf0/o.jpg" width="222"/> 
+				</a> <br />
+	
+				
+				
 			</c:otherwise>
 		</c:choose>
 	
@@ -70,8 +79,7 @@
 	
 	<main>
 	
-  <!-- <a href="./NaverLogin"><img height="50" src="http://static.nid.naver.com/oauth/small_g_in.PNG"/></a> -->	
-	  
+  	  
 	</main>
 	
 	

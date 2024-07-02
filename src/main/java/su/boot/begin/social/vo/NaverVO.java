@@ -1,4 +1,4 @@
-package su.boot.begin.vo;
+package su.boot.begin.social.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

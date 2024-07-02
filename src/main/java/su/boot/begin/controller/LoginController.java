@@ -1,21 +1,13 @@
 package su.boot.begin.controller;
 
-import java.math.BigInteger;
-import java.security.SecureRandom;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpSession;
@@ -23,10 +15,9 @@ import lombok.RequiredArgsConstructor;
 import su.boot.begin.entity.Member;
 import su.boot.begin.service.LoginService;
 import su.boot.begin.service.SocialLoginService;
+import su.boot.begin.social.vo.KakaoResponseVO;
+import su.boot.begin.social.vo.NaverResponseVO;
 import su.boot.begin.vo.MemberVO;
-import su.boot.begin.vo.NaverAPIVO;
-import su.boot.begin.vo.NaverResponseVO;
-import su.boot.begin.vo.NaverVO;
 
 @Controller
 @RequiredArgsConstructor
@@ -95,20 +86,49 @@ public class LoginController {
 	}
 	
 	// 카카오 로그인 
-	@PostMapping("/KakaoLogin")
-	public String kakaoLogin() {
-		return null;
+	@GetMapping("/KakaoLogin")
+	public String kakaoLogin(Model model) {
+		
+		model.addAttribute("kakao_login_url", socialLoginService.getKakaoLogin());
+		
+		return "login/kakao_login";
+	}
+	
+	@GetMapping("/KakaoLoginCallback")
+	public String kakaoLoginCallback(@RequestParam("code") String code, HttpSession httpSession) {
+		
+		// 1. 사용자 로그인 등록으로 access token 생성
+		String accessToken = socialLoginService.getKakaoAccessToken(code).getAccess_token();
+		
+		// 2. access token 으로 접근해 사용자의 정보 요청
+		KakaoResponseVO kakaoResponseVO = socialLoginService.getKakaoProfile(accessToken);
+		
+		// 3. 사용자의 정보를 세션에 저장
+		httpSession.setAttribute("kakao_access_token", accessToken);
+		
+		httpSession.setAttribute("member_name", kakaoResponseVO.getKakao_account().getName());
+		
+		return "index";
 	}
 	
 	// 로그아웃
 	@GetMapping("/Logout")
 	public String logout(HttpSession httpSession) {
 		
-		// 1. 네이버 로그아웃
-		String accessToken = (String)httpSession.getAttribute("naver_access_token");
-		String refreshToken = (String)httpSession.getAttribute("naver_refresh_token");
+		// 1. 네이버 로그아웃 세션값이 있다면 토큰 삭제
+		if(httpSession.getAttribute("naver_access_token") != null || httpSession.getAttribute("naver_refresh_token") != null) {
+			String accessToken = (String)httpSession.getAttribute("naver_access_token");
+			String refreshToken = (String)httpSession.getAttribute("naver_refresh_token");
 		
-		socialLoginService.naverLogout(accessToken, refreshToken);
+			socialLoginService.naverLogout(accessToken, refreshToken);
+
+		}
+			
+		
+		// 2. 카카오 로그아웃 세션값이 있다면 토큰 삭제
+		if(httpSession.getAttribute("kakao_access_token") != null) {
+			socialLoginService.kakaoLogout();
+		}
 		
 		// 2. session 삭제
 		httpSession.invalidate();
@@ -117,8 +137,6 @@ public class LoginController {
 		return "login/logout";
 	}
 	
-	
-	// 카카오 로그아웃 
 	
 	// 아이디 찾기
 	@GetMapping("/IdSearch")

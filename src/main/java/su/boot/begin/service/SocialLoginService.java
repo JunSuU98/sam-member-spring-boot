@@ -2,21 +2,29 @@ package su.boot.begin.service;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import lombok.RequiredArgsConstructor;
+import su.boot.begin.config.KakaoApiKeys;
 import su.boot.begin.config.NaverApiKeys;
-import su.boot.begin.vo.NaverAPIVO;
-import su.boot.begin.vo.NaverResponseVO;
-import su.boot.begin.vo.NaverVO;
+import su.boot.begin.social.vo.KakaoResponseVO;
+import su.boot.begin.social.vo.KakaoVO;
+import su.boot.begin.social.vo.NaverAPIVO;
+import su.boot.begin.social.vo.NaverResponseVO;
+import su.boot.begin.social.vo.NaverVO;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +35,9 @@ public class SocialLoginService {
 	
 	@Autowired
 	private final NaverApiKeys naverApiKeys;
+	
+	@Autowired
+	private final KakaoApiKeys kakaoApiKeys;
 	
 	// 0. 네이버 로그인 api 사용
 	public String getNaverLogin() {
@@ -95,9 +106,9 @@ public class SocialLoginService {
 		ResponseEntity<String> response = restTemplate.getForEntity(deleteUrl, String.class);	
 		
 		if(response.getStatusCode() == HttpStatus.OK) { // 기존의 access token 삭제 성공
-			
+			System.out.println("naver 토큰 삭제 성공");
 		} else {
-
+			System.out.println("naver 토큰 삭제 실패");
 		}
 		
 		// 3-2. 기존 refresh token 을 써서 더 이상 token refresh 할 수 없는지 확인
@@ -108,14 +119,111 @@ public class SocialLoginService {
 		
 		ResponseEntity<String> refreshResponse = restTemplate.getForEntity(refreshUrl, String.class);	
 		
-		if(refreshResponse.getStatusCode() == HttpStatus.OK) { // refresh token 을 할수 없기 때문에 로그아웃 성공
-			System.out.println("로그아웃 성공!!");
-			return "delete success";
+		if(refreshResponse.getStatusCode() == HttpStatus.OK) {
+			
+			if(refreshResponse.getBody().toString().contains("error")) { // refresh token 의 응답에 error 가 있으면 정상적으로 토큰 삭제가 이루어진 것이다
+				
+				System.out.println("네이버 로그아웃 성공");
+
+				return "네이버 로그아웃 성공";
+			}
+			
+			return "refresh api call success";
 		} else {
-			System.out.println("로그아웃 실패!!!!!");
-			return "delete fail";
+			return "refresh api call fail";
 		}
 		
 	}
+	
+	
+	
+	// 0. 카카오 로그인 api 사용 (access code 받음)
+	public String getKakaoLogin() {
+		
+		String url = "https://kauth.kakao.com/oauth/authorize?"
+				+ "&client_id=" + kakaoApiKeys.getClientId()
+				+ "&redirect_uri=" + kakaoApiKeys.getRedirectURI()
+				+ "&response_type=code";
+		
+		
+		return url;
+	}
+	
+	
+	
+	// 1. 카카오 access token 획득
+	public KakaoVO getKakaoAccessToken(String code) {
+		
+		String tokenURL = "https://kauth.kakao.com/oauth/token";
+		
+		// http header 생성
+		HttpHeaders headers = new HttpHeaders();
+		headers.set(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=UTF-8");
+		
+		// http body 생성
+		MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
+		requestBody.add("grant_type", "authorization_code");
+		requestBody.add("client_id", kakaoApiKeys.getClientId());
+		requestBody.add("redirect_uri", kakaoApiKeys.getRedirectURI());
+		requestBody.add("code", code);
+		
+		// http entity 생성 (헤더 + 바디)
+		HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
+		
+		ResponseEntity<KakaoVO> response = restTemplate.postForEntity(tokenURL, requestEntity, KakaoVO.class);
+		
+		if(response.getStatusCode() == HttpStatus.OK) {
+			return response.getBody();
+		} else {
+			return null;
+		}
+		
+	}
+	
+	// 2. access token 을 통한 사용자 정보 획득
+	public KakaoResponseVO getKakaoProfile(String accessToken) {
+		
+		String apiURL = "https://kapi.kakao.com/v2/user/me";
+		
+		// http header 생성
+		HttpHeaders headers = new HttpHeaders();
+		headers.set(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=UTF-8");
+		headers.add("Authorization", "Bearer " + accessToken);
+		
+		HttpEntity<String> entity = new HttpEntity<>(headers);
+
+		// kakao 회원 정보 api 에 get 요청
+		ResponseEntity<KakaoResponseVO> response = restTemplate.exchange(apiURL, HttpMethod.GET, entity, KakaoResponseVO.class);
+		
+		if(response.getStatusCode() == HttpStatus.OK) {
+			return response.getBody();
+			
+		} else {
+			
+			return null;
+		}
+
+	}
+	
+	// 3. 카카오 로그아웃
+	public String kakaoLogout() {;
+	
+		String logoutURL = "https://kauth.kakao.com/oauth/logout?"
+				+ "&client_id=" + kakaoApiKeys.getClientId()
+				+ "&logout_redirect_uri=" + kakaoApiKeys.getLogoutRedirectURI();
+		
+		ResponseEntity<String> logoutResponse = restTemplate.getForEntity(logoutURL, String.class);	
+		
+		if(logoutResponse.getStatusCode() == HttpStatus.FOUND) {
+			System.out.println("로그아웃 성공!!");
+			return "kakao logout success";
+		} else {
+			System.out.println("로그아웃 실패!!!!!");
+			return "kakao logout fail";
+		}	
+		
+	}
+	
+	
 	
 }

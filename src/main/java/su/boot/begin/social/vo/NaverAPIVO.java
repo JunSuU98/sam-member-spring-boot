@@ -1,4 +1,4 @@
-package su.boot.begin.vo;
+package su.boot.begin.social.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
